@@ -1,0 +1,6 @@
+--index-url https://github.com/GauthierLi/Gutils.git
+--trusted-host pypi.tuna.tsinghua.edu.cn/simple
+-e .
+
+numpy
+matplotlib
