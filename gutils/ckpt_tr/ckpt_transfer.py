@@ -17,19 +17,19 @@ class WeightTrans(object):
     Examples
     --------
         class paddlemixTransfer(WeightTrans):
-        def source2target_rule(self, key):
-            parties = key.split('.')
-            index = parties[1]
-            prefix = str(int(index) // 10)
-            new_index = ".".join([prefix, index])
-            parties[1] = new_index
-            new_key = '.'.join(parties)
-            
-            if 'fc1' in new_key:
-                new_key = new_key.replace('fc1', 'w12')
-            if 'fc2' in new_key:
-                new_key = new_key.replace('fc2', 'w3')
-            return new_key
+            def source2target_rule(self, key):
+                parties = key.split('.')
+                index = parties[1]
+                prefix = str(int(index) // 10)
+                new_index = ".".join([prefix, index])
+                parties[1] = new_index
+                new_key = '.'.join(parties)
+                
+                if 'fc1' in new_key:
+                    new_key = new_key.replace('fc1', 'w12')
+                if 'fc2' in new_key:
+                    new_key = new_key.replace('fc2', 'w3')
+                return new_key
         
         wt = paddlemixTransfer(r"/path/to/source/weight.pdparams", 
                      r"/path/to/source/target.pdparams")
