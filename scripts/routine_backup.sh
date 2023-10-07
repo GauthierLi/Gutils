@@ -1,3 +1,4 @@
+#!/bin/bash
 backup_dir="/root/workdir"
 log_file="/root/routine_backup.log"
 physical_save_place="/root/routine_backup.tar.gz"
