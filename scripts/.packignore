@@ -1,0 +1,9 @@
+Medical/
+log/
+__pycache__/
+*.pdparams
+*.pth
+*.zip
+*.tar.gz
+*.tar
+*.pk
