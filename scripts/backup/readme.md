@@ -82,7 +82,7 @@ bash backup.sh /path/to/dir/need/backup /path/to/save/dir/name.tar.gz
 3. 支持通过 --exclude = /path/to/file/or/dir 来排除文件或文件夹
 匹配强制匹配所有目录以及子文件夹，不需要使用 **/log/的方式即可匹配多级目录；
 
-# 2. 自动备份
+## 1.2 自动备份
 一个例子，配合上面的备份脚本，自动备份所有代码到 bpfs 中，并记录备份时间到 log_file 中. 修改好自己需要每日备份的路径，并给足权限
 ```bash
 chmod +x routine_backup.sh
@@ -146,6 +146,51 @@ chmod +x /path/to/your/script.sh
 ```bash
 crontab -l
 ```
-10. 这将显示你的 crontab 文件的内容，确保你的定时任务已经添加。
+10. 这将显示你的 `crontab` 文件的内容，确保你的定时任务已经添加。运行以下命令启动服务（每次修改crontab -e都重启一下服务，确保生效）。
+```bash
+service cron start
+```
+
 完成上述步骤后，cron 将会按照你设置的时间定时运行你的脚本。
-注意: 对于一些系统，确保你的脚本在 shebang 行（例如 #!/bin/bash）开始，并确保所有需要的环境变量都被正确设置，因为 cron 不会加载完整的用户环境。
+
+
+**注意**: 
+
+1.crontab 时间经常对不上，运行以下命令修改本地时间为上海时间。
+```bash
+cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+service cron restart
+```
+2.对于一些系统，确保你的脚本在 shebang 行（例如 `#!/bin/bash`）开始，并确保所有需要的环境变量都被正确设置，因为 `cron` 不会加载完整的用户环境。
+
+# 2. 环境备份
+
+使用conda-pack备份环境
+```bash
+conda install conda-pack
+```
+
+打包方式三选一
+```bash
+# 把虚拟环境 my_env 打包为 my_env.tar.gz
+conda pack -n my_env
+
+# -o 参数指定打包路径和名称，把虚拟环境 my_env 打包为 out_name.tar.gz
+conda pack -n my_env -o out_name.tar.gz
+
+# 把某个特定路径的虚拟环境打包为 my_env.tar.gz
+conda pack -p /explicit/path/to/my_env
+```
+
+备份后在conda环境中恢复
+```bash
+mkdir /path/for/anaconda3/envs && cd /path/for/anaconda3/envs
+tar -zxvf /path/to/my/envs -C .
+source ~/.bashrc
+```
+检查环境
+```bash
+conda info --env
+conda activate my_env
+conda list
+```
