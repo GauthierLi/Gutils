@@ -17,19 +17,19 @@ class WeightTrans(object):
     Examples
     --------
         class paddlemixTransfer(WeightTrans):
-            def source2target_rule(self, key):
-                parties = key.split('.')
-                index = parties[1]
-                prefix = str(int(index) // 10)
-                new_index = ".".join([prefix, index])
-                parties[1] = new_index
-                new_key = '.'.join(parties)
-                
-                if 'fc1' in new_key:
-                    new_key = new_key.replace('fc1', 'w12')
-                if 'fc2' in new_key:
-                    new_key = new_key.replace('fc2', 'w3')
-                return new_key
+        def source2target_rule(self, key):
+            parties = key.split('.')
+            index = parties[1]
+            prefix = str(int(index) // 10)
+            new_index = ".".join([prefix, index])
+            parties[1] = new_index
+            new_key = '.'.join(parties)
+            
+            if 'fc1' in new_key:
+                new_key = new_key.replace('fc1', 'w12')
+            if 'fc2' in new_key:
+                new_key = new_key.replace('fc2', 'w3')
+            return new_key
         
         wt = paddlemixTransfer(r"/path/to/source/weight.pdparams", 
                      r"/path/to/source/target.pdparams")
@@ -104,7 +104,7 @@ class WeightTrans(object):
             show_number (int, optional): 展示的缺失键的最大数量, 默认值为10.
         
         Returns:
-            Tuple[Dict[str, List[str]], Dict[str, List[str]]]: 两个字典分别表示源语言和目标语言中缺失的键及其对应的前缀, 
+            Tuple[Dict[str, List[str]], Dict[str, List[str]], source_missing_rate: float, target_missing_rate: float]: 两个字典分别表示源语言和目标语言中缺失的键及其对应的前缀, 
             字典的键为前缀，值为该前缀下缺失的键的列表。
         
         """
@@ -124,7 +124,9 @@ class WeightTrans(object):
                         target_missing[prefix].append(key)
             else:
                 continue
-        return source_missing, target_missing
+        source_missing_rate = len(source_missing) / len(self.source_keys)
+        target_missing_rate = len(target_missing) / len(self.target_keys)
+        return source_missing, target_missing, source_missing_rate, target_missing_rate
     
     def source2target(self, 
                       save_dir,
@@ -219,7 +221,7 @@ if you want to repaire it ,please reimplement self.transfer_weight method!"
         
         """
         source_top3, target_top3 = self._prefix_analyse()
-        source2target, target2source = self._missing_analyse(source_top3, target_top3)
+        source2target, target2source, s2t_rate, t2s_rate = self._missing_analyse(source_top3, target_top3)
         if len(source2target.values()):
             s2t = reduce(self.beauty_str, [reduce(self.beauty_str, value) for value in source2target.values()])
         else:
@@ -238,6 +240,7 @@ Key word \'{list(source_top3.keys())[0]}\' most like to be a prefix of the sourc
 Key word \'{list(target_top3.keys())[0]}\' most like to be a prefix of the target.
 {'-' * 100}
 KEY_WORD MISSING ANALYSE:
+    Source targe in {1 - s2t_rate} %, Target target in {1 - t2s_rate} %:
     IN SOURCE NOT IN TARGET: 
         {s2t}
     IN TARGET NOT IN SOURCE: 
