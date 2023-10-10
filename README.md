@@ -71,7 +71,12 @@ class WeightTrans(WeightTrans):
     def transfer_weight(self, key, source_weight):
         if key == 'noise_estimator.cond_embedder.embedding.weight':
             return source_weight.astype('float32')
-            
+        shape_len = len(source_weight.shape)
+        trs_idx = [i for i in range(shape_len)]
+        if shape_len == 2:
+            trs_idx = trs_idx[::-1]
+        if  shape_len > 2:
+            trs_idx = trs_idx[:-2] + [trs_idx[-1], trs_idx[-2]]
         if 'weight' in key:
             return source_weight.transpose(*trs_idx).astype('float32')
         else:
