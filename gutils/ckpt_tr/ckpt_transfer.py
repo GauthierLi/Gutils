@@ -12,26 +12,33 @@ class WeightTrans(object):
             1. 加载源权重文件和目标权重文件;
             2. 根据源权重文件和目标权重文件的关键字分析，找出模型权重转换的解决方案;
             3. 将关键子转换规则写入 source2target_rule 方法；
-            4. 必要时通过重写transfer_weight方法， 将权重shape进行转换;
+            4. 必要时通过重写transfer_weight方法， 对权重shape或者是type进行转换;
             5. 调用source2target方法，完成权重转换。
+    Parameters
+    ----------
+            * source_weight: str 需要转换的源权重文件
+            * targe_weight: str 一个用于对齐的权重文件，一般直接由目标模型生成，仅用于对齐key 和权重的shape
+            * source_keys_prefix: List[str] 列表，用于指定源权重文件中的key，如权重文件为字典，
+        参数保存在key为 'state_dict' 的值中，则对应的 prefix为 ['state_dict']
+            * target_keys_prefix: List[str] 同上
     Examples
     --------
-        class paddlemixTransfer(WeightTrans):
-        def source2target_rule(self, key):
-            parties = key.split('.')
-            index = parties[1]
-            prefix = str(int(index) // 10)
-            new_index = ".".join([prefix, index])
-            parties[1] = new_index
-            new_key = '.'.join(parties)
+        class WeightTrans(WeightTrans):
+            def source2target_rule(self, key):
+                if 'noise_estimator.outc' in key:
+                    key = key.replace('noise_estimator.outc.conv.conv', 'noise_estimator.outc')
+                return key
             
-            if 'fc1' in new_key:
-                new_key = new_key.replace('fc1', 'w12')
-            if 'fc2' in new_key:
-                new_key = new_key.replace('fc2', 'w3')
-            return new_key
+            def transfer_weight(self, key, source_weight):
+                if key == 'noise_estimator.cond_embedder.embedding.weight':
+                    return source_weight.astype('float32')
+                    
+                if 'weight' in key:
+                    return source_weight.transpose(*trs_idx).astype('float32')
+                else:
+                    return source_weight.astype('float32')
         
-        wt = paddlemixTransfer(r"/path/to/source/weight.pdparams", 
+        wt = WeightTrans(r"/path/to/source/weight.pdparams", 
                      r"/path/to/source/target.pdparams")
         wt.source2target(r"/path/to/save/, "paddle")
 
@@ -43,6 +50,7 @@ class WeightTrans(object):
                  target_keys_prefix: List[str]=None) -> None:
         self.source_weight, self.source_type = (paddle.load(source_weight), "paddle") if \
             source_weight.endswith('.pdparams') else (torch.load(source_weight), "torch")
+            
         self.target_weight, self.target_type = (paddle.load(target_weight), "paddle") if \
             target_weight.endswith('.pdparams') else (torch.load(target_weight), "torch")
         self.source_keys, self.target_keys = self._get_params(source_keys_prefix, target_keys_prefix)  
@@ -145,17 +153,25 @@ class WeightTrans(object):
         
         """
         new_state_dict = {}
+        if self.source_type != self.target_type:
+            warnings.warn("Alert target type is not equal to source type, \
+                if it is nesserary, please reimplement self.transfer_weight method!")
         for key in self.source_keys:
             if key in self.target_keys:
-                new_state_dict[key] = self.source_weight[key]
+                new_state_dict[key] = self.transfer_weight(key, self.source_weight[key].numpy())
+                if (source_shape := list(new_state_dict[key].shape)) != \
+                        (target_shape := list(self.target_weight[key].shape)):
+                    error = f"Source shape of {key} {source_shape} != target shape {target_shape} , \
+if you want to repaire it ,please reimplement self.transfer_weight method!"
+                    warnings.warn(error)
                 continue
             try:
                 new_key = self.source2target_rule(key)
                 if new_key not in self.target_keys:
                     print("new key {} not in target".format(new_key))
                 else:
-                    transfer_weight = self.transfer_weight(new_key, self.source_weight[key])
-                    if (source_shape := list(self.source_weight[key].shape)) != \
+                    transfer_weight = self.transfer_weight(new_key, self.source_weight[key].numpy())
+                    if (source_shape := list(transfer_weight.shape)) != \
                             (target_shape := list(self.target_weight[new_key].shape)):
                             
                         error = f"Source shape of {new_key} {source_shape} != target shape {target_shape} , \
@@ -195,7 +211,8 @@ if you want to repaire it ,please reimplement self.transfer_weight method!"
         raise NotImplementedError()
     
     def transfer_weight(self, key:str, source_weight: Any) -> Any:
-        return source_weight
+        """ 输入是一个ndarray，输出也是一个ndarray。"""
+        return source_weight.astype('float32')
     
     def beauty_str(self, str1='', str2='', tab=1):
         """
@@ -247,22 +264,3 @@ KEY_WORD MISSING ANALYSE:
         {t2s}
 """
         return strings
-
-if __name__ == "__main__":
-    class paddlemixTransfer(WeightTrans):
-        def source2target_rule(self, key):
-            parties = key.split('.')
-            index = parties[1]
-            prefix = str(int(index) // 10)
-            new_index = ".".join([prefix, index])
-            parties[1] = new_index
-            new_key = '.'.join(parties)
-            
-            if 'fc1' in new_key:
-                new_key = new_key.replace('fc1', 'w12')
-            if 'fc2' in new_key:
-                new_key = new_key.replace('fc2', 'w3')
-            return new_key
-        
-    wt = paddlemixTransfer(r"/root/workdir/ckpts/paddlemix/model_state.pdparams", 
-                    r"/root/workdir/PASSL_dinov2_fp32/dinov2_vit_gaint2_patch14_224_in1k_pt_10ep_bz128_student.pdparams")
