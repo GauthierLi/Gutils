@@ -32,7 +32,13 @@ class WeightTrans(object):
             def transfer_weight(self, key, source_weight):
                 if key == 'noise_estimator.cond_embedder.embedding.weight':
                     return source_weight.astype('float32')
-                    
+                
+                shape_len = len(source_weight.shape)
+                trs_idx = [i for i in range(shape_len)]
+                if shape_len == 2:
+                    trs_idx = trs_idx[::-1]
+                if  shape_len > 2:
+                    trs_idx = trs_idx[:-2] + [trs_idx[-1], trs_idx[-2]]
                 if 'weight' in key:
                     return source_weight.transpose(*trs_idx).astype('float32')
                 else:
@@ -257,7 +263,7 @@ Key word \'{list(source_top3.keys())[0]}\' most like to be a prefix of the sourc
 Key word \'{list(target_top3.keys())[0]}\' most like to be a prefix of the target.
 {'-' * 100}
 KEY_WORD MISSING ANALYSE:
-    Source targe in {1 - s2t_rate} %, Target target in {1 - t2s_rate} %:
+    Source targe in {(1 - s2t_rate) * 100 :.2f} %, Target target in {(1 - t2s_rate) * 100:.2f} %:
     IN SOURCE NOT IN TARGET: 
         {s2t}
     IN TARGET NOT IN SOURCE: 
