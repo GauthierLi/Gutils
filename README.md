@@ -94,7 +94,7 @@ wt.source2target(r"/path/to/save/", "paddle")
 维护者
 ---
 ### owners
-* liweikang02(liweikang02@baidu.com)
+* GauthierLi(lwklxh@163.com)
 
 ### committers
-* liweikang02(liweikang02@baidu.com)
+* GauthierLi(lwklxh@163.com)
