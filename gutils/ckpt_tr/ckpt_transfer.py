@@ -40,7 +40,7 @@ class WeightTrans(object):
         
         wt = WeightTrans(r"/path/to/source/weight.pdparams", 
                      r"/path/to/source/target.pdparams")
-        wt.source2target(r"/path/to/save/, "paddle")
+        wt.source2target(r"/path/to/save/", "paddle")
 
     """
     def __init__(self, 
