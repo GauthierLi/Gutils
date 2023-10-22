@@ -9,44 +9,44 @@ class WeightTrans(object):
     """
     Usage
     --------
-            1. 加载源权重文件和目标权重文件;
-            2. 根据源权重文件和目标权重文件的关键字分析，找出模型权重转换的解决方案;
-            3. 将关键子转换规则写入 source2target_rule 方法；
-            4. 必要时通过重写transfer_weight方法， 对权重shape或者是type进行转换;
-            5. 调用source2target方法，完成权重转换。
+        1. 加载源权重文件和目标权重文件;
+        2. 根据源权重文件和目标权重文件的关键字分析，找出模型权重转换的解决方案;
+        3. 将关键子转换规则写入 `source2target_rule` 方法；
+        4. 必要时通过重写 `transfer_weight` 方法， 对权重shape或者是type进行转换;
+        5. 调用source2target方法，完成权重转换。
     Parameters
     ----------
-            * source_weight: str 需要转换的源权重文件
-            * targe_weight: str 一个用于对齐的权重文件，一般直接由目标模型生成，仅用于对齐key 和权重的shape
-            * source_keys_prefix: List[str] 列表，用于指定源权重文件中的key，如权重文件为字典，
-        参数保存在key为 'state_dict' 的值中，则对应的 prefix为 ['state_dict']
-            * target_keys_prefix: List[str] 同上
+        * source_weight: str 需要转换的源权重文件
+        * targe_weight: str 一个用于对齐的权重文件，一般直接由目标模型生成，仅用于对齐key 和权重的shape
+        * source_keys_prefix: List[str] 列表，用于指定源权重文件中的key，如权重文件为字典，参数保存在key为 'state_dict' 的值中，则对应的 prefix为 ['state_dict']
+        * target_keys_prefix: List[str] 同上
+    
     Examples
     --------
-        class WeightTrans(WeightTrans):
-            def source2target_rule(self, key):
-                if 'noise_estimator.outc' in key:
-                    key = key.replace('noise_estimator.outc.conv.conv', 'noise_estimator.outc')
-                return key
-            
-            def transfer_weight(self, key, source_weight):
-                if key == 'noise_estimator.cond_embedder.embedding.weight':
-                    return source_weight.astype('float32')
-                
-                shape_len = len(source_weight.shape)
-                trs_idx = [i for i in range(shape_len)]
-                if shape_len == 2:
-                    trs_idx = trs_idx[::-1]
-                if  shape_len > 2:
-                    trs_idx = trs_idx[:-2] + [trs_idx[-1], trs_idx[-2]]
-                if 'weight' in key:
-                    return source_weight.transpose(*trs_idx).astype('float32')
-                else:
-                    return source_weight.astype('float32')
-        
-        wt = WeightTrans(r"/path/to/source/weight.pdparams", 
-                     r"/path/to/source/target.pdparams")
-        wt.source2target(r"/path/to/save/", "paddle")
+>>>        class WeightTrans(WeightTrans):
+>>>            def source2target_rule(self, key):
+>>>                if 'noise_estimator.outc' in key:
+>>>                    key = key.replace('noise_estimator.outc.conv.conv', 'noise_estimator.outc')
+>>>                return key
+>>>            
+>>>            def transfer_weight(self, key, source_weight):
+>>>                if key == 'noise_estimator.cond_embedder.embedding.weight':
+>>>                    return source_weight.astype('float32')
+>>>                
+>>>                shape_len = len(source_weight.shape)
+>>>                trs_idx = [i for i in range(shape_len)]
+>>>                if shape_len == 2:
+>>>                    trs_idx = trs_idx[::-1]
+>>>                if  shape_len > 2:
+>>>                    trs_idx = trs_idx[:-2] + [trs_idx[-1], trs_idx[-2]]
+>>>                if 'weight' in key:
+>>>                    return source_weight.transpose(*trs_idx).astype('float32')
+>>>                else:
+>>>                    return source_weight.astype('float32')
+>>>        
+>>>        wt = WeightTrans(r"/path/to/source/weight.pdparams", 
+>>>                     r"/path/to/source/target.pdparams")
+>>>        wt.source2target(r"/path/to/save/", "paddle")
 
     """
     def __init__(self, 
