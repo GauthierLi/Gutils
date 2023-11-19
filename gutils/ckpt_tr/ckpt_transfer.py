@@ -1,6 +1,10 @@
-import torch
+try:
+    import torch
+    import paddle
+except Exception as e:
+    print(e)
+    print('if you want to use WeightTrans, you have to install pytorch and paddle')
 import warnings
-import paddle
 from typing import List, Any
 from functools import reduce
 from collections import defaultdict, OrderedDict
