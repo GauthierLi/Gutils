@@ -1,13 +1,8 @@
 # -*- coding: UTF-8 -*-
-################################################################################
-#
-# Copyright (c) 2023 Baidu.com, Inc. All Rights Reserved
-#
-################################################################################
 """
 本文件允许模块包以python -m gutils方式直接执行。
 
-Authors: liweikang02(liweikang02@baidu.com)
+Authors: gauthierli(lwklxh@163.com)
 Date:    2023/09/27 11:12:47
 """
 

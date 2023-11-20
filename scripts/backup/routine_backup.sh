@@ -2,7 +2,7 @@
 backup_dir="/root/workdir"
 log_file="/root/routine_backup.log"
 physical_save_place="/root/routine_backup.tar.gz"
-bpfs_place="/bpfs/v2_mnt/HCG/liweikang02/routine_backup"
+bpfs_place="/path/to/bpfs"
 
 # 备份到本地空间中
 echo "[$(date +"%Y-%m-%d %H:%M:%S")] backup at $physical_save_place" >> $log_file

@@ -87,10 +87,6 @@ wt.source2target(r"/path/to/save/", "paddle")
 ```
 注意： `/path/to/save/` 不用写后缀 如 ` /root/dest`，程序会自动根据第二个位置参数进行判断，并补全为 `/root/dest.pdparams` 或者 `/root/dest.pth` 。
 
-版本信息
----
-本项目的各版本信息和变更历史可以在[这里][changelog]查看。
-
 维护者
 ---
 ### owners

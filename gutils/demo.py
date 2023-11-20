@@ -1,13 +1,8 @@
 # -*- coding: UTF-8 -*-
-################################################################################
-#
-# Copyright (c) 2023 Baidu.com, Inc. All Rights Reserved
-#
-################################################################################
 """
 本文件实现了一个hello world的demo类。
 
-Authors: liweikang02(liweikang02@baidu.com)
+Authors: gauthierli(lwklxh@163.com)
 Date:    2023/09/27 11:12:47
 """
 
